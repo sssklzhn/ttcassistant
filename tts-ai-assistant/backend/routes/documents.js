@@ -161,6 +161,18 @@ const upload = multer({
 
 // Функция для чанкования текста
 function chunkText(text, chunkSize = 1000, overlap = 100) {
+  console.log('🔧 DEBUG: Starting text chunking', {
+    textLength: text.length,
+    chunkSize,
+    overlap
+  });
+
+  // Если текст пустой, возвращаем пустой массив
+  if (!text || text.trim().length === 0) {
+    console.log('⚠️ DEBUG: Text is empty, no chunks created');
+    return [];
+  }
+
   const chunks = [];
   let start = 0;
   
@@ -195,6 +207,11 @@ function chunkText(text, chunkSize = 1000, overlap = 100) {
     
     start = end;
   }
+
+  console.log('✅ DEBUG: Chunking completed', {
+    totalChunks: chunks.length,
+    firstChunkPreview: chunks[0]?.content.substring(0, 100) + '...'
+  });
   
   return chunks;
 }
@@ -202,11 +219,24 @@ function chunkText(text, chunkSize = 1000, overlap = 100) {
 // Функция для извлечения текста из PDF с чанкованием
 async function extractTextFromPDF(filePath) {
   const startTime = Date.now();
-  logger.info('Starting PDF extraction', { filePath });
+  console.log('📄 DEBUG: Starting PDF extraction', { filePath });
   
   try {
     const dataBuffer = fs.readFileSync(filePath);
     const pdfData = await pdfParse(dataBuffer);
+    
+    console.log('🔍 DEBUG: PDF extraction results', {
+      textLength: pdfData.text.length,
+      textPreview: pdfData.text.substring(0, 200) + '...',
+      pages: pdfData.numpages,
+      hasText: pdfData.text.length > 0
+    });
+
+    // Если текст пустой, возможно PDF защищен или содержит только изображения
+    if (pdfData.text.length === 0) {
+      console.log('❌ DEBUG: PDF text extraction returned empty text');
+      throw new Error('Не удалось извлечь текст из PDF. Возможно файл защищен или содержит только изображения.');
+    }
     
     const extractionTime = Date.now() - startTime;
     logger.info('PDF text extracted', { 
@@ -234,6 +264,7 @@ async function extractTextFromPDF(filePath) {
       }
     };
   } catch (error) {
+    console.error('💥 DEBUG: PDF extraction failed', error);
     logger.error('PDF extraction failed', { filePath, error: error.message });
     throw error;
   }
@@ -242,10 +273,23 @@ async function extractTextFromPDF(filePath) {
 // Функция для извлечения текста из DOCX
 async function extractTextFromDOCX(filePath) {
   const startTime = Date.now();
-  logger.info('Starting DOCX extraction', { filePath });
+  console.log('📄 DEBUG: Starting DOCX extraction', { filePath });
   
   try {
     const result = await mammoth.extractRawText({ path: filePath });
+    
+    console.log('🔍 DEBUG: DOCX extraction results', {
+      textLength: result.value.length,
+      textPreview: result.value.substring(0, 200) + '...',
+      hasText: result.value.length > 0,
+      warnings: result.messages
+    });
+
+    if (result.value.length === 0) {
+      console.log('❌ DEBUG: DOCX text extraction returned empty text');
+      throw new Error('Не удалось извлечь текст из DOCX файла');
+    }
+
     const extractionTime = Date.now() - startTime;
     
     logger.info('DOCX text extracted', {
@@ -265,6 +309,7 @@ async function extractTextFromDOCX(filePath) {
       }
     };
   } catch (error) {
+    console.error('💥 DEBUG: DOCX extraction failed', error);
     logger.error('DOCX extraction failed', { filePath, error: error.message });
     throw error;
   }
@@ -280,15 +325,19 @@ router.post('/upload', auth, adminAuth, upload.single('document'), async (req, r
       return res.status(400).json({ message: 'Файл не загружен' });
     }
 
-    logger.info('File upload started', {
+    console.log('📤 DEBUG: File upload started', {
       userId: req.user._id,
-      fileName: req.file.originalname,
+      originalName: req.file.originalname,
+      fileName: req.file.filename,
       fileSize: req.file.size,
-      fileType: req.file.mimetype
+      fileType: req.file.mimetype,
+      filePath: req.file.path
     });
 
     let extractedData;
     const fileExt = path.extname(req.file.originalname).toLowerCase();
+
+    console.log(`🔧 DEBUG: Processing ${fileExt} file`);
 
     if (fileExt === '.pdf') {
       extractedData = await extractTextFromPDF(req.file.path);
@@ -297,6 +346,13 @@ router.post('/upload', auth, adminAuth, upload.single('document'), async (req, r
     } else {
       throw new Error('Неподдерживаемый формат файла');
     }
+
+    // 🔍 ДИАГНОСТИКА: проверяем извлеченный текст
+    console.log('📊 DEBUG: Text extraction completed', {
+      textLength: extractedData.fullText.length,
+      chunksCount: extractedData.chunks.length,
+      firstChunkPreview: extractedData.chunks[0]?.content.substring(0, 100) + '...'
+    });
 
     // Сохраняем документ с чанками
     const document = new Document({
@@ -312,10 +368,29 @@ router.post('/upload', auth, adminAuth, upload.single('document'), async (req, r
 
     await document.save();
 
+    // Проверяем сохранение в базе
+    const savedDoc = await Document.findById(document._id);
+    console.log('💾 DEBUG: Document saved to database', {
+      documentId: document._id,
+      chunksInDB: savedDoc.chunks.length,
+      chunkCountField: savedDoc.chunkCount,
+      chunksMatch: extractedData.chunks.length === savedDoc.chunks.length
+    });
+
     // Clean up file after processing
-    fs.unlinkSync(req.file.path);
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+      console.log('🧹 DEBUG: Temporary file cleaned up');
+    }
 
     const totalTime = Date.now() - uploadStartTime;
+    
+    console.log('✅ DEBUG: Upload completed successfully', {
+      totalTime: `${totalTime}ms`,
+      documentId: document._id,
+      finalChunkCount: savedDoc.chunks.length
+    });
+
     logger.info('Document uploaded successfully', {
       userId: req.user._id,
       documentId: document._id,
@@ -336,6 +411,11 @@ router.post('/upload', auth, adminAuth, upload.single('document'), async (req, r
     });
   } catch (error) {
     const totalTime = Date.now() - uploadStartTime;
+    console.error('❌ DEBUG: Upload failed', {
+      error: error.message,
+      stack: error.stack
+    });
+    
     logger.error('Document upload failed', {
       userId: req.user._id,
       fileName: req.file?.originalname,
@@ -346,6 +426,7 @@ router.post('/upload', auth, adminAuth, upload.single('document'), async (req, r
     // Clean up file in case of error
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
+      console.log('🧹 DEBUG: Temporary file cleaned up after error');
     }
     
     res.status(500).json({ message: 'Ошибка при обработке документа: ' + error.message });
@@ -360,6 +441,15 @@ router.get('/', auth, async (req, res) => {
       .select('originalName fileType createdAt uploadedBy chunkCount')
       .populate('uploadedBy', 'fullName email');
     
+    console.log('📋 DEBUG: Documents list retrieved', {
+      count: documents.length,
+      documents: documents.map(doc => ({
+        name: doc.originalName,
+        chunks: doc.chunkCount,
+        type: doc.fileType
+      }))
+    });
+
     logger.debug('Documents list retrieved', { userId: req.user._id, count: documents.length });
     res.json(documents);
   } catch (error) {
@@ -377,6 +467,16 @@ router.get('/:id/chunks', auth, async (req, res) => {
     if (!document) {
       return res.status(404).json({ message: 'Документ не найден' });
     }
+
+    console.log('🔍 DEBUG: Retrieving document chunks', {
+      documentId: req.params.id,
+      documentName: document.originalName,
+      chunksCount: document.chunks.length,
+      chunksPreview: document.chunks.slice(0, 3).map((chunk, i) => ({
+        chunkIndex: i,
+        contentPreview: chunk.content.substring(0, 100) + '...'
+      }))
+    });
 
     res.json({
       documentName: document.originalName,

@@ -178,33 +178,78 @@ async function findRelevantChunks(userMessage, userId) {
   const startTime = Date.now();
   
   try {
-    // Получаем все документы
-    const documents = await Document.find();
+    // 🔍 ДИАГНОСТИКА: проверяем что вообще есть в базе
+    const totalDocs = await Document.countDocuments();
+    console.log('🔍 DEBUG: Total documents in system:', totalDocs);
+
+    // Получаем все документы с чанками
+    const documents = await Document.find().select('originalName chunks');
     
-    let allChunks = [];
-    documents.forEach(doc => {
-      doc.chunks.forEach((chunk, index) => {
-        allChunks.push({
-          content: chunk.content,
-          documentName: doc.originalName,
-          chunkIndex: index,
-          documentId: doc._id
-        });
-      });
+    // Детальная диагностика
+    console.log('📋 DEBUG: Documents details:');
+    let totalChunksInSystem = 0;
+    documents.forEach((doc, index) => {
+      console.log(`  ${index + 1}. "${doc.originalName}": ${doc.chunks.length} chunks`);
+      totalChunksInSystem += doc.chunks.length;
+      if (doc.chunks.length > 0) {
+        console.log(`     First chunk preview: "${doc.chunks[0].content.substring(0, 100)}..."`);
+      }
     });
 
-    // Простой поиск по ключевым словам (можно улучшить с помощью векторного поиска)
-    const searchTerms = userMessage.toLowerCase().split(/\s+/).filter(term => term.length > 3);
+    console.log(`🔢 DEBUG: Total chunks in system: ${totalChunksInSystem}`);
+
+    let allChunks = [];
+    documents.forEach(doc => {
+      if (doc.chunks && doc.chunks.length > 0) {
+        doc.chunks.forEach((chunk, index) => {
+          allChunks.push({
+            content: chunk.content,
+            documentName: doc.originalName,
+            chunkIndex: index,
+            documentId: doc._id
+          });
+        });
+      }
+    });
+
+    console.log(`📦 DEBUG: Total chunks collected for search: ${allChunks.length}`);
+
+    // Если вообще нет чанков, сразу возвращаем пустой массив
+    if (allChunks.length === 0) {
+      console.log('❌ DEBUG: No chunks available in system');
+      const searchTime = Date.now() - startTime;
+      logger.debug('Chunk search completed - no chunks', {
+        userId,
+        searchTerms: [],
+        totalChunks: 0,
+        relevantChunks: 0,
+        selectedChunks: 0,
+        searchTime: `${searchTime}ms`
+      });
+      return [];
+    }
+
+    // Простой поиск по ключевым словам
+    const searchTerms = userMessage.toLowerCase().split(/\s+/).filter(term => term.length > 2); // Уменьшил до 2 символов
+    console.log(`🔎 DEBUG: Search terms:`, searchTerms);
     
     const relevantChunks = allChunks.filter(chunk => {
       const chunkText = chunk.content.toLowerCase();
-      return searchTerms.some(term => chunkText.includes(term));
+      const found = searchTerms.some(term => chunkText.includes(term));
+      if (found && searchTerms.length > 0) {
+        console.log(`   ✅ Found "${searchTerms}" in chunk: ${chunkText.substring(0, 100)}...`);
+      }
+      return found;
     });
 
-    // Если не нашли по ключевым словам, берем первые чанки из каждого документа
+    console.log(`🎯 DEBUG: Relevant chunks found: ${relevantChunks.length}`);
+
+    // Если не нашли по ключевым словам, берем случайные чанки для контекста
     const finalChunks = relevantChunks.length > 0 
-      ? relevantChunks.slice(0, 5) // Берем топ-5 релевантных чанков
-      : allChunks.slice(0, 3); // Или первые 3 чанка
+      ? relevantChunks.slice(0, 5)
+      : allChunks.slice(0, 3); // Берем первые 3 чанка для контекста
+
+    console.log(`📤 DEBUG: Final chunks selected: ${finalChunks.length}`);
 
     const searchTime = Date.now() - startTime;
     logger.debug('Chunk search completed', {
@@ -218,9 +263,83 @@ async function findRelevantChunks(userMessage, userId) {
 
     return finalChunks;
   } catch (error) {
+    console.error('❌ DEBUG: Chunk search error:', error);
     logger.error('Chunk search failed', { userId, error: error.message });
     return [];
   }
+}
+
+// Бесплатные AI API провайдеры с приоритетом
+const AI_PROVIDERS = [
+  {
+    name: 'HuggingFace',
+    url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-large',
+    method: 'POST',
+    headers: () => ({
+      'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+      'Content-Type': 'application/json'
+    }),
+    body: (prompt) => ({
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 500,
+        temperature: 0.7,
+        do_sample: true
+      }
+    }),
+    extractResponse: (data) => data[0]?.generated_text || data
+  },
+  {
+    name: 'Groq',
+    url: process.env.LLAMA_API_URL || 'https://api.groq.com/openai/v1/chat/completions',
+    method: 'POST',
+    headers: () => ({
+      'Authorization': `Bearer ${process.env.LLAMA_API_KEY}`,
+      'Content-Type': 'application/json'
+    }),
+    body: (prompt) => ({
+      messages: [
+        {
+          role: "system",
+          content: "Ты полезный AI-ассистент для сотрудников компании ТрансТелеком. Отвечай на русском языке профессионально и вежливо. Используй предоставленный контекст для точных ответов."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      model: "llama-3.1-8b-instant",
+      temperature: 0.7,
+      max_tokens: 1024,
+      top_p: 1,
+      stream: false
+    }),
+    extractResponse: (data) => data.choices?.[0]?.message?.content || data
+  }
+];
+
+// Фолбэк локальная модель
+const FALLBACK_RESPONSES = {
+  'привет': 'Здравствуйте! Я AI-ассистент компании ТрансТелеком. Чем могу помочь?',
+  'документ': 'Информацию о документах вы можете найти в системе документооборота компании.',
+  'помощь': 'Я могу помочь с вопросами о документах компании ТрансТелеком. Задайте ваш вопрос.',
+  'демежан': 'Демежан - сотрудник компании ТрансТелеком. Более подробную информацию можно найти в документах компании.',
+  'default': 'Спасибо за ваш вопрос! На основе доступных документов компании я могу предоставить вам информацию. Если нужны конкретные данные, уточните ваш запрос.'
+};
+
+function getFallbackResponse(message, chunksCount) {
+  const lowerMessage = message.toLowerCase();
+  
+  if (chunksCount === 0) {
+    return "В настоящее время в системе нет загруженных документов для поиска информации. Обратитесь к администратору для загрузки документов.";
+  }
+  
+  for (const [key, response] of Object.entries(FALLBACK_RESPONSES)) {
+    if (lowerMessage.includes(key) && key !== 'default') {
+      return response;
+    }
+  }
+  return FALLBACK_RESPONSES.default;
 }
 
 // AI Response Generator с учетом чанков
@@ -232,9 +351,11 @@ async function generateAIResponse(userMessage, userId) {
     const relevantChunks = await findRelevantChunks(userMessage, userId);
     
     // Собираем контекст из чанков
-    const context = relevantChunks.map(chunk => 
-      `[Из документа "${chunk.documentName}", часть ${chunk.chunkIndex + 1}]:\n${chunk.content}`
-    ).join('\n\n');
+    const context = relevantChunks.length > 0 
+      ? relevantChunks.map(chunk => 
+          `[Из документа "${chunk.documentName}", часть ${chunk.chunkIndex + 1}]:\n${chunk.content}`
+        ).join('\n\n')
+      : 'В системе нет загруженных документов для поиска информации.';
 
     const prompt = `Контекст из документов компании ТрансТелеком:
 ${context}
@@ -251,53 +372,114 @@ ${context}
       promptLength: prompt.length
     });
 
-    // Groq API call
-    const response = await axios.post(process.env.LLAMA_API_URL, {
-      messages: [
-        {
-          role: "system",
-          content: "Ты полезный AI-ассистент для сотрудников компании ТрансТелеком. Отвечай на русском языке профессионально и вежливо. Используй предоставленный контекст для точных ответов."
-        },
-        {
-          role: "user",
-          content: prompt
+    // Пробуем все провайдеры по очереди
+    for (const provider of AI_PROVIDERS) {
+      try {
+        // Пропускаем провайдера если нет API ключа
+        if (provider.name === 'Groq' && !process.env.LLAMA_API_KEY) continue;
+        if (provider.name === 'HuggingFace' && !process.env.HUGGINGFACE_API_KEY) continue;
+        
+        console.log(`🤖 DEBUG: Trying ${provider.name} API`);
+        
+        const response = await axios({
+          method: provider.method,
+          url: provider.url,
+          headers: provider.headers(),
+          data: provider.body(prompt),
+          timeout: 15000 // 15 секунд таймаут
+        });
+
+        if (response.status === 200 || response.status === 201) {
+          const aiResponse = provider.extractResponse(response.data);
+          
+          if (aiResponse && aiResponse.trim().length > 0) {
+            const totalTime = Date.now() - startTime;
+            logger.info('AI response generated', {
+              userId,
+              provider: provider.name,
+              responseLength: aiResponse.length,
+              chunksUsed: relevantChunks.length,
+              totalTime: `${totalTime}ms`
+            });
+            
+            return aiResponse;
+          }
         }
-      ],
-      model: "llama-3.1-8b-instant",
-      temperature: 0.7,
-      max_tokens: 1024,
-      top_p: 1,
-      stream: false
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.LLAMA_API_KEY}`,
-        'Content-Type': 'application/json'
+      } catch (error) {
+        console.log(`⚠️ DEBUG: ${provider.name} failed:`, error.message);
+        logger.warn(`AI provider ${provider.name} failed`, {
+          userId,
+          error: error.message
+        });
+        // Продолжаем к следующему провайдеру
+        continue;
       }
-    });
+    }
 
-    const aiResponse = response.data.choices[0].message.content;
-    const totalTime = Date.now() - startTime;
+    // Если все API недоступны, используем фолбэк
+    console.log('🔄 DEBUG: All AI providers failed, using fallback');
+    logger.warn('All AI providers failed, using fallback', { userId });
+    return getFallbackResponse(userMessage, relevantChunks.length);
 
-    logger.info('AI response generated', {
-      userId,
-      responseLength: aiResponse.length,
-      chunksUsed: relevantChunks.length,
-      totalTime: `${totalTime}ms`
-    });
-
-    return aiResponse;
   } catch (error) {
     const totalTime = Date.now() - startTime;
-    logger.error('AI API Error', { 
+    console.error('💥 DEBUG: AI generation error:', error);
+    logger.error('AI generation failed', { 
       userId, 
-      error: error.response?.data || error.message,
+      error: error.message,
       totalTime: `${totalTime}ms`
     });
-    return "Извините, в настоящее время я не могу обработать ваш запрос. Пожалуйста, попробуйте позже или обратитесь к администратору.";
+    return "Извините, в настоящее время сервис временно недоступен. Пожалуйста, попробуйте позже или обратитесь к администратору.";
   }
 }
 
-// ... остальные маршруты остаются без изменений ...
+// Get specific chat
+router.get('/:chatId', auth, async (req, res) => {
+  try {
+    const chat = await Chat.findOne({
+      _id: req.params.chatId,
+      userId: req.user._id
+    });
+
+    if (!chat) {
+      logger.warn('Chat not found', { userId: req.user._id, chatId: req.params.chatId });
+      return res.status(404).json({ message: 'Чат не найден' });
+    }
+
+    res.json(chat);
+  } catch (error) {
+    logger.error('Failed to retrieve chat', { 
+      userId: req.user._id, 
+      chatId: req.params.chatId,
+      error: error.message 
+    });
+    res.status(500).json({ message: 'Ошибка при получении чата' });
+  }
+});
+
+// Delete chat
+router.delete('/:chatId', auth, async (req, res) => {
+  try {
+    const chat = await Chat.findOneAndDelete({
+      _id: req.params.chatId,
+      userId: req.user._id
+    });
+
+    if (!chat) {
+      return res.status(404).json({ message: 'Чат не найден' });
+    }
+
+    logger.info('Chat deleted', { userId: req.user._id, chatId: req.params.chatId });
+    res.json({ message: 'Чат удален' });
+  } catch (error) {
+    logger.error('Failed to delete chat', {
+      userId: req.user._id,
+      chatId: req.params.chatId,
+      error: error.message
+    });
+    res.status(500).json({ message: 'Ошибка при удалении чата' });
+  }
+});
 
 // Create new chat
 router.post('/new', auth, async (req, res) => {
@@ -369,6 +551,7 @@ router.post('/:chatId/message', auth, async (req, res) => {
       chat.title = message.substring(0, 50) + (message.length > 50 ? '...' : '');
     }
 
+    chat.updatedAt = new Date();
     await chat.save();
 
     const totalTime = Date.now() - startTime;
