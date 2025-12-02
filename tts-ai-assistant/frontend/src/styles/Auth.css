@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: #ffffff;
   padding: 20px;
   position: relative;
   overflow: hidden;
@@ -17,104 +17,84 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, #0f172a 0%, #1e293b 100%);
+  background: #ffffff;
 }
 
 .auth-background-pattern {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(#10b981 1px, transparent 1px),
-    radial-gradient(#059669 1px, transparent 1px);
-  background-size: 50px 50px;
-  background-position: 0 0, 25px 25px;
-  opacity: 0.1;
+  display: none;
 }
 
 /* Основная карточка */
 .auth-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
+  background: #ffffff;
   padding: 60px;
-  border-radius: 24px;
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.25),
-    0 8px 25px rgba(16, 185, 129, 0.15);
+  border-radius: 0;
+  box-shadow: none;
   width: 100%;
-  max-width: 1200px;
+  max-width: 480px;
   position: relative;
   z-index: 1;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: none;
   display: flex;
-  gap: 60px;
+  flex-direction: column;
+  gap: 0;
   align-items: center;
-  min-height: 700px;
+  min-height: auto;
 }
 
-/* Левая колонка с логотипом - УНИКАЛЬНЫЕ СТИЛИ */
+/* Левая колонка с логотипом - теперь сверху */
 .auth-logo-section {
-  flex: 1;
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px;
+  padding: 0;
+  margin-bottom: 40px;
+  width: 100%;
 }
+
 .ttc-logo-container {
-  width: 280px;
-  height: 280px;
+  width: 120px;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  box-shadow: 
-    0 20px 40px rgba(16, 185, 129, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  padding: 30px;
-  margin-bottom: 40px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 16px;
   position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  overflow: visible;
+  transition: none;
+  border: none;
 }
 
 .ttc-logo-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent);
-  transition: left 0.6s ease;
+  display: none;
 }
 
 .ttc-logo-container:hover::before {
-  left: 100%;
+  display: none;
 }
 
 .ttc-logo-container:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 
-    0 30px 60px rgba(16, 185, 129, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: none;
+  box-shadow: none;
 }
 
 .ttc-logo-image {
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: contain;
-  transition: all 0.3s ease;
+  transition: none;
 }
 
 .ttc-logo-container:hover .ttc-logo-image {
-  transform: scale(1.05);
-  filter: brightness(0) invert(1) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+  transform: none;
+  filter: none;
 }
 
 .ttc-company-info {
@@ -122,50 +102,38 @@
 }
 
 .ttc-company-name {
-  font-size: 42px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0 0 12px 0;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-size: 18px;
+  font-weight: 400;
+  color: #64748b;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: 0.3px;
 }
 
 .ttc-company-subtitle {
-  font-size: 18px;
-  color: #10b981;
-  font-weight: 600;
-  margin: 0;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  position: relative;
-  display: inline-block;
+  display: none;
 }
 
 .ttc-company-subtitle::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, #10b981, transparent);
-  border-radius: 2px;
+  display: none;
 }
 
-/* Правая колонка с формой */
+/* Правая колонка с формой - теперь по центру */
 .auth-form-section {
-  flex: 1;
-  max-width: 400px;
-  padding: 20px;
+  flex: none;
+  max-width: 100%;
+  width: 100%;
+  padding: 0;
 }
 
 .auth-header {
   text-align: center;
   margin-bottom: 40px;
+  display: none;
 }
 
 .auth-title {
@@ -190,31 +158,26 @@
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   position: relative;
 }
 
 .form-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #374151;
-  font-weight: 600;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  display: none;
 }
 
 .form-input {
   width: 100%;
-  padding: 16px 20px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: 14px 20px;
+  border: 2px solid #10b981;
+  border-radius: 8px;
+  font-size: 14px;
   transition: all 0.3s ease;
   background: #ffffff;
   box-sizing: border-box;
   font-family: inherit;
   position: relative;
+  color: #64748b;
 }
 
 .form-input:focus {
@@ -222,12 +185,17 @@
   border-color: #10b981;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .form-input::placeholder {
-  color: #9ca3af;
+  color: #94a3b8;
   font-size: 14px;
+}
+
+/* Иконки для инпутов */
+.form-group::before {
+  display: none;
 }
 
 /* Опции формы */
@@ -246,16 +214,16 @@
 
 .terms-group {
   margin-bottom: 24px;
-  background: #f8fafc;
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  border: none;
 }
 
 .checkbox-input {
   width: 18px;
   height: 18px;
-  border: 2px solid #d1d5db;
+  border: 2px solid #10b981;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -281,9 +249,9 @@
 }
 
 .checkbox-label {
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 400;
   cursor: pointer;
   line-height: 1.4;
 }
@@ -306,7 +274,7 @@
 .forgot-password:hover {
   color: #059669;
   text-decoration: underline;
-  background: #f0fdf4;
+  background: transparent;
 }
 
 /* Кнопки */
@@ -318,10 +286,10 @@
 
 .btn {
   width: 100%;
-  padding: 16px 24px;
+  padding: 14px 24px;
   border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  border-radius: 8px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -337,19 +305,20 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
   color: white;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  box-shadow: none;
   border: none;
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  transform: none;
+  box-shadow: none;
+  background: #059669;
 }
 
 .btn-primary:active {
-  transform: translateY(0);
+  transform: none;
 }
 
 .btn-primary:disabled {
@@ -393,13 +362,13 @@
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #dc2626;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-radius: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
   animation: slideDown 0.3s ease-out;
@@ -424,8 +393,8 @@
 /* Футер */
 .auth-footer {
   text-align: center;
-  padding-top: 24px;
-  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+  border-top: none;
 }
 
 .auth-footer-text {
@@ -447,7 +416,7 @@
 .auth-link:hover {
   color: #059669;
   text-decoration: underline;
-  background: #f0fdf4;
+  background: transparent;
 }
 
 /* Анимации */
@@ -467,7 +436,7 @@
 }
 
 .ttc-logo-container {
-  animation: logoFloat 6s ease-in-out infinite;
+  animation: none;
 }
 
 @keyframes logoFloat {
@@ -501,18 +470,17 @@
 /* Адаптивность */
 @media (max-width: 1024px) {
   .auth-card {
-    max-width: 900px;
-    padding: 40px;
-    gap: 40px;
+    max-width: 480px;
+    padding: 60px 40px;
+    gap: 0;
   }
   
   .ttc-logo-container {
-    width: 240px;
-    height: 240px;
+    width: 120px;
   }
   
   .ttc-company-name {
-    font-size: 36px;
+    font-size: 16px;
   }
 }
 
@@ -522,103 +490,51 @@
   }
   
   .auth-card {
-    flex-direction: column;
     padding: 40px 30px;
-    gap: 40px;
-    max-width: 500px;
-    min-height: auto;
+    max-width: 400px;
   }
   
   .auth-logo-section {
-    padding: 20px;
-  }
-  
-  .ttc-logo-container {
-    width: 200px;
-    height: 200px;
     margin-bottom: 30px;
   }
   
+  .ttc-logo-container {
+    width: 100px;
+    margin-bottom: 12px;
+  }
+  
   .ttc-company-name {
-    font-size: 32px;
-  }
-  
-  .ttc-company-subtitle {
-    font-size: 16px;
-  }
-  
-  .auth-form-section {
-    max-width: 100%;
-    padding: 0;
-  }
-  
-  .auth-title {
-    font-size: 28px;
+    font-size: 14px;
   }
 }
 
 @media (max-width: 480px) {
   .auth-card {
     padding: 30px 20px;
-    margin: 10px;
-    border-radius: 20px;
   }
   
   .ttc-logo-container {
-    width: 160px;
-    height: 160px;
-    padding: 20px;
-  }
-  
-  .ttc-company-name {
-    font-size: 28px;
-  }
-  
-  .ttc-company-subtitle {
-    font-size: 14px;
-  }
-  
-  .auth-title {
-    font-size: 24px;
-  }
-  
-  .auth-description {
-    font-size: 14px;
-  }
-  
-  .form-options {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
+    width: 90px;
   }
   
   .form-input {
-    padding: 14px 16px;
-    font-size: 14px;
+    padding: 12px 18px 12px 40px;
+    font-size: 13px;
   }
   
   .btn {
-    padding: 14px 20px;
+    padding: 12px 20px;
     font-size: 14px;
   }
   
   .terms-group {
-    padding: 12px;
+    padding: 0;
   }
 }
 
 /* Дополнительные декоративные элементы */
 .auth-logo-section::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  z-index: -1;
+  display: none;
 }
 
 /* Индикатор силы пароля */
