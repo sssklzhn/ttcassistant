@@ -1,0 +1,790 @@
+/* Register.css */
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--ttc-black) 0%, var(--ttc-deep-blue) 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+/* Основной контейнер */
+.auth-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Карточка регистрации */
+.register-card {
+  display: flex;
+  background: linear-gradient(135deg, 
+    rgba(11, 15, 18, 0.8) 0%, 
+    rgba(15, 23, 32, 0.7) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(27, 79, 40, 0.2);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 80px rgba(0, 0, 0, 0.4),
+    0 8px 32px rgba(27, 79, 40, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Прогресс регистрации */
+.registration-progress {
+  background: rgba(11, 15, 18, 0.5);
+  border: 1px solid rgba(27, 79, 40, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 24px 0;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.progress-header h3 {
+  font-size: 18px;
+  color: var(--ttc-white);
+  margin: 0;
+}
+
+.progress-step {
+  font-size: 14px;
+  color: var(--ttc-lime);
+  font-weight: 600;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ttc-dark-green), var(--ttc-lime));
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.progress-steps {
+  display: flex;
+  gap: 12px;
+}
+
+.step-indicator {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.step-indicator.active {
+  opacity: 1;
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ttc-muted);
+  transition: all 0.3s ease;
+}
+
+.step-indicator.active .step-number {
+  background: linear-gradient(135deg, var(--ttc-dark-green), #246033);
+  border-color: var(--ttc-dark-green);
+  color: var(--ttc-white);
+}
+
+.step-indicator span {
+  font-size: 12px;
+  color: var(--ttc-muted);
+  text-align: center;
+}
+
+.step-indicator.active span {
+  color: var(--ttc-lime);
+  font-weight: 500;
+}
+
+/* Список преимуществ */
+.benefits-list {
+  margin: 24px 0;
+}
+
+.benefits-title {
+  font-size: 16px;
+  color: var(--ttc-lime);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.benefit-item:hover {
+  background: rgba(27, 79, 40, 0.05);
+  border-color: rgba(27, 79, 40, 0.2);
+  transform: translateX(4px);
+}
+
+.benefit-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--ttc-lime);
+  flex-shrink: 0;
+}
+
+.benefit-content {
+  flex: 1;
+}
+
+.benefit-content h5 {
+  font-size: 14px;
+  color: var(--ttc-white);
+  margin: 0 0 4px 0;
+  font-weight: 600;
+}
+
+.benefit-content p {
+  font-size: 12px;
+  color: var(--ttc-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Бейдж безопасности */
+.security-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ttc-lime);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Правая панель - специфичные для регистрации стили */
+.auth-form-section {
+  flex: 1;
+  padding: 48px;
+  background: linear-gradient(135deg, 
+    rgba(11, 15, 18, 0.7) 0%, 
+    rgba(15, 23, 32, 0.6) 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-subtitle {
+  font-size: 14px;
+  color: var(--ttc-muted);
+  margin: 4px 0 0 0;
+}
+
+/* Кнопка демо */
+.demo-enterprise-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--ttc-dark-green), #246033);
+  color: var(--ttc-white);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-enterprise-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(27, 79, 40, 0.3);
+}
+
+.demo-icon {
+  width: 16px;
+  height: 16px;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* Шаги формы */
+.form-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.step-header {
+  margin-bottom: 32px;
+}
+
+.step-header h3 {
+  font-size: 20px;
+  color: var(--ttc-white);
+  margin: 0 0 8px 0;
+}
+
+.step-description {
+  font-size: 14px;
+  color: var(--ttc-muted);
+  margin: 0;
+}
+
+/* Ряды формы */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row .input-field {
+  flex: 1;
+}
+
+/* Индикатор силы пароля */
+.password-strength-indicator {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--ttc-muted);
+}
+
+.strength-value {
+  font-weight: 600;
+}
+
+.strength-value.weak {
+  color: #ef4444;
+}
+
+.strength-value.medium {
+  color: #f59e0b;
+}
+
+.strength-value.strong {
+  color: var(--ttc-lime);
+}
+
+/* Метр силы пароля */
+.strength-meter {
+  margin: 8px 0;
+}
+
+.strength-bars {
+  display: flex;
+  gap: 4px;
+  height: 4px;
+}
+
+.strength-bar {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.strength-bar.filled {
+  background: linear-gradient(90deg, var(--ttc-dark-green), var(--ttc-lime));
+}
+
+.strength-bar:nth-child(1).filled { background: var(--ttc-dark-green); }
+.strength-bar:nth-child(2).filled { background: rgba(27, 79, 40, 0.8); }
+.strength-bar:nth-child(3).filled { background: rgba(27, 79, 40, 0.6); }
+.strength-bar:nth-child(4).filled { background: rgba(27, 79, 40, 0.4); }
+
+/* Требования к паролю */
+.password-requirements {
+  background: rgba(11, 15, 18, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.password-requirements h5 {
+  font-size: 13px;
+  color: var(--ttc-white);
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.requirements-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.requirements-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ttc-muted);
+  transition: color 0.3s ease;
+}
+
+.requirements-list li.met {
+  color: var(--ttc-lime);
+}
+
+.requirement-icon {
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s ease;
+}
+
+.requirements-list li.met .requirement-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Соглашение с условиями */
+.terms-agreement {
+  margin: 24px 0;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.terms-checkbox .custom-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.terms-checkbox input:checked + .custom-checkbox {
+  background: linear-gradient(135deg, var(--ttc-dark-green), #246033);
+  border-color: var(--ttc-dark-green);
+}
+
+.terms-checkbox .check-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--ttc-white);
+}
+
+.terms-text {
+  font-size: 13px;
+  color: var(--ttc-muted);
+  line-height: 1.5;
+}
+
+.terms-link {
+  color: var(--ttc-lime);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.terms-link:hover {
+  color: var(--ttc-white);
+  text-decoration: underline;
+}
+
+/* Предпринимательское соглашение */
+.enterprise-agreement {
+  background: rgba(27, 79, 40, 0.1);
+  border: 1px solid rgba(27, 79, 40, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.doc-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--ttc-lime);
+  flex-shrink: 0;
+}
+
+.agreement-content h5 {
+  font-size: 14px;
+  color: var(--ttc-white);
+  margin: 0 0 6px 0;
+  font-weight: 600;
+}
+
+.agreement-content p {
+  font-size: 12px;
+  color: var(--ttc-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Действия формы */
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.btn-next,
+.btn-register {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--ttc-dark-green), #246033);
+  color: var(--ttc-white);
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-next:hover,
+.btn-register:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(27, 79, 40, 0.3);
+}
+
+.btn-register:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-register.loading .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--ttc-white);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--ttc-muted);
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  background: rgba(27, 79, 40, 0.1);
+  color: var(--ttc-white);
+  border-color: rgba(27, 79, 40, 0.3);
+}
+
+.btn-arrow {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.btn-next:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Альтернативная регистрация */
+.alternative-registration {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.alt-providers {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.provider-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  color: var(--ttc-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.provider-btn:hover {
+  background: rgba(27, 79, 40, 0.1);
+  color: var(--ttc-white);
+  border-color: rgba(27, 79, 40, 0.3);
+}
+
+.provider-btn.sso:hover {
+  background: rgba(27, 79, 40, 0.2);
+  border-color: var(--ttc-dark-green);
+}
+
+.provider-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.provider-btn.sso .provider-icon {
+  color: var(--ttc-lime);
+}
+
+/* Информация о поддержке */
+.support-info {
+  margin-top: 16px;
+}
+
+.support-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ttc-muted);
+}
+
+.support-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--ttc-lime);
+}
+
+.support-link {
+  color: var(--ttc-lime);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.support-link:hover {
+  color: var(--ttc-white);
+  text-decoration: underline;
+}
+
+/* Линк на логин */
+.login-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ttc-lime);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.login-link:hover {
+  color: var(--ttc-white);
+}
+
+.link-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Валидация инпутов */
+.input-hint {
+  font-size: 12px;
+  color: var(--ttc-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+.form-input:valid {
+  border-color: rgba(27, 79, 40, 0.3);
+}
+
+.form-input:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Анимация появления полей */
+.form-step .input-field {
+  animation: fieldAppear 0.4s ease forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes fieldAppear {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-step .input-field:nth-child(1) { animation-delay: 0.1s; }
+.form-step .input-field:nth-child(2) { animation-delay: 0.2s; }
+.form-step .input-field:nth-child(3) { animation-delay: 0.3s; }
+.form-step .input-field:nth-child(4) { animation-delay: 0.4s; }
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+  .register-card {
+    flex-direction: column;
+  }
+  
+  .auth-brand-section,
+  .auth-form-section {
+    width: 100%;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 16px;
+  }
+  
+  .auth-brand-section,
+  .auth-form-section {
+    padding: 32px 24px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .btn-back,
+  .btn-next,
+  .btn-register {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .alt-providers {
+    flex-direction: column;
+  }
+  
+  .progress-steps {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .step-indicator {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .step-indicator span {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-page {
+    padding: 0;
+  }
+  
+  .auth-brand-section,
+  .auth-form-section {
+    padding: 24px 16px;
+  }
+  
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .demo-enterprise-btn {
+    width: 100%;
+  }
+  
+  .terms-text {
+    font-size: 12px;
+  }
+  
+  .company-title {
+    font-size: 24px;
+  }
+}

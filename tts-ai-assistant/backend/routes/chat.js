@@ -163,6 +163,7 @@
 // });
 
 // export default router;
+
 import express from 'express';
 import Chat from '../models/Chat.js';
 import Document from '../models/Document.js';
@@ -301,7 +302,7 @@ const AI_PROVIDERS = [
       messages: [
         {
           role: "system",
-          content: "Ты полезный AI-ассистент для сотрудников компании ТрансТелеком. Отвечай на русском языке профессионально и вежливо. Используй предоставленный контекст для точных ответов."
+          content: "Ты полезный AI-ассистент для сотрудников компании ТрансТелеком. Отвечай на русском языке профессионально и вежливо. Используй предоставленный контекст для точных ответов. Учитывай историю диалога в чате."
         },
         {
           role: "user",
@@ -342,8 +343,8 @@ function getFallbackResponse(message, chunksCount) {
   return FALLBACK_RESPONSES.default;
 }
 
-// AI Response Generator с учетом чанков
-async function generateAIResponse(userMessage, userId) {
+// AI Response Generator с учетом чанков И истории чата
+async function generateAIResponse(userMessage, userId, chatHistory = []) {
   const startTime = Date.now();
   
   try {
@@ -357,26 +358,123 @@ async function generateAIResponse(userMessage, userId) {
         ).join('\n\n')
       : 'В системе нет загруженных документов для поиска информации.';
 
+    // Формируем историю диалога (если есть)
+    let conversationHistory = '';
+    if (chatHistory && chatHistory.length > 0) {
+      // Берем последние 5 сообщений для контекста
+      const recentMessages = chatHistory.slice(-10); // Увеличил до 10 сообщений
+      conversationHistory = 'История диалога:\n' + recentMessages.map(msg => 
+        `${msg.role === 'user' ? 'Сотрудник' : 'Ассистент'}: ${msg.content}`
+      ).join('\n') + '\n\n';
+    }
+
     const prompt = `Контекст из документов компании ТрансТелеком:
 ${context}
 
-Вопрос сотрудника: ${userMessage}
+${conversationHistory}Новый вопрос сотрудника: ${userMessage}
 
 Ответь как AI-ассистент компании ТрансТелеком. Будь полезным, профессиональным и отвечай на русском языке.
-Если в контексте нет информации для ответа, вежливо сообщи об этом.
+Учитывай предыдущую историю диалога. Если в контексте нет информации для ответа, вежливо сообщи об этом.
+Не повторяй приветствия если диалог уже начат.
 Ответ:`;
 
     logger.debug('AI request prepared', {
       userId,
       contextChunks: relevantChunks.length,
+      chatHistoryLength: chatHistory ? chatHistory.length : 0,
       promptLength: prompt.length
     });
 
-    // Пробуем все провайдеры по очереди
+    // Для Groq API нужно передавать всю историю сообщений в messages
+    if (process.env.LLAMA_API_KEY) {
+      try {
+        // Формируем messages для Groq с историей
+        const messages = [
+          {
+            role: "system",
+            content: "Ты полезный AI-ассистент для сотрудников компании ТрансТелеком. Отвечай на русском языке профессионально и вежливо. Используй предоставленный контекст для точных ответов. Учитывай историю диалога."
+          }
+        ];
+
+        // Добавляем историю чата (если есть)
+        if (chatHistory && chatHistory.length > 0) {
+          // Берем последние 15 сообщений (чтобы не превысить лимит токенов)
+          const recentMessages = chatHistory.slice(-15);
+          recentMessages.forEach(msg => {
+            messages.push({
+              role: msg.role,
+              content: msg.content
+            });
+          });
+        } else {
+          // Если истории нет, добавляем только текущий вопрос
+          messages.push({
+            role: "user",
+            content: prompt
+          });
+        }
+
+        // Добавляем последнее сообщение отдельно, если его еще нет в истории
+        if (chatHistory.length === 0 || chatHistory[chatHistory.length - 1].content !== userMessage) {
+          messages.push({
+            role: "user",
+            content: userMessage
+          });
+        }
+
+        console.log(`🤖 DEBUG: Groq messages count: ${messages.length}`);
+        
+        const response = await axios({
+          method: 'POST',
+          url: process.env.LLAMA_API_URL || 'https://api.groq.com/openai/v1/chat/completions',
+          headers: {
+            'Authorization': `Bearer ${process.env.LLAMA_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          data: {
+            messages: messages,
+            model: "llama-3.1-8b-instant",
+            temperature: 0.7,
+            max_tokens: 1024,
+            top_p: 1,
+            stream: false
+          },
+          timeout: 15000
+        });
+
+        if (response.status === 200 || response.status === 201) {
+          const aiResponse = response.data.choices?.[0]?.message?.content;
+          
+          if (aiResponse && aiResponse.trim().length > 0) {
+            const totalTime = Date.now() - startTime;
+            logger.info('AI response generated', {
+              userId,
+              provider: 'Groq',
+              responseLength: aiResponse.length,
+              chunksUsed: relevantChunks.length,
+              chatHistoryUsed: chatHistory ? chatHistory.length : 0,
+              totalTime: `${totalTime}ms`
+            });
+            
+            return aiResponse;
+          }
+        }
+      } catch (error) {
+        console.log(`⚠️ DEBUG: Groq failed:`, error.message);
+        logger.warn(`AI provider Groq failed`, {
+          userId,
+          error: error.message
+        });
+        // Продолжаем к следующему провайдеру
+      }
+    }
+
+    // Пробуем другие провайдеры (только для промптов без сложной истории)
     for (const provider of AI_PROVIDERS) {
+      if (provider.name === 'Groq') continue; // Уже пробовали
+      
       try {
         // Пропускаем провайдера если нет API ключа
-        if (provider.name === 'Groq' && !process.env.LLAMA_API_KEY) continue;
         if (provider.name === 'HuggingFace' && !process.env.HUGGINGFACE_API_KEY) continue;
         
         console.log(`🤖 DEBUG: Trying ${provider.name} API`);
@@ -386,7 +484,7 @@ ${context}
           url: provider.url,
           headers: provider.headers(),
           data: provider.body(prompt),
-          timeout: 15000 // 15 секунд таймаут
+          timeout: 15000
         });
 
         if (response.status === 200 || response.status === 201) {
@@ -399,6 +497,7 @@ ${context}
               provider: provider.name,
               responseLength: aiResponse.length,
               chunksUsed: relevantChunks.length,
+              chatHistoryUsed: chatHistory ? chatHistory.length : 0,
               totalTime: `${totalTime}ms`
             });
             
@@ -411,7 +510,6 @@ ${context}
           userId,
           error: error.message
         });
-        // Продолжаем к следующему провайдеру
         continue;
       }
     }
@@ -515,7 +613,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Send message
+// Send message - ОБНОВЛЕННАЯ ВЕРСИЯ с передачей истории
 router.post('/:chatId/message', auth, async (req, res) => {
   const startTime = Date.now();
   
@@ -531,22 +629,27 @@ router.post('/:chatId/message', auth, async (req, res) => {
       return res.status(404).json({ message: 'Чат не найден' });
     }
 
-    // Add user message
+    // 🔴 ПРОБЛЕМА БЫЛА: ИИ не видел историю
+    // 🟢 РЕШЕНИЕ: передаем ВСЮ историю чата в generateAIResponse
+    const aiResponse = await generateAIResponse(
+      message, 
+      req.user._id, 
+      chat.messages // Передаем все предыдущие сообщения
+    );
+
+    // Добавляем сообщение пользователя
     chat.messages.push({
       role: 'user',
       content: message
     });
 
-    // Generate AI response
-    const aiResponse = await generateAIResponse(message, req.user._id);
-
-    // Add AI response
+    // Добавляем ответ ИИ
     chat.messages.push({
       role: 'assistant',
       content: aiResponse
     });
 
-    // Update chat title if it's the first message
+    // Обновляем заголовок если это первое сообщение
     if (chat.messages.length === 2) {
       chat.title = message.substring(0, 50) + (message.length > 50 ? '...' : '');
     }
@@ -560,6 +663,7 @@ router.post('/:chatId/message', auth, async (req, res) => {
       chatId: chat._id,
       messageLength: message.length,
       responseLength: aiResponse.length,
+      totalMessages: chat.messages.length,
       totalTime: `${totalTime}ms`
     });
 
