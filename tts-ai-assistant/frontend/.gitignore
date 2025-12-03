@@ -1,3 +1,20 @@
-node_modules/
-.env
-build/
+# Создайте .gitignore в корне проекта
+echo "# Environment variables" > .gitignore
+echo ".env" >> .gitignore
+echo "backend/.env" >> .gitignore
+echo "frontend/.env" >> .gitignore
+echo "*.env" >> .gitignore
+echo "" >> .gitignore
+
+# Добавьте другие игнорируемые файлы
+echo "# Dependencies" >> .gitignore
+echo "node_modules/" >> .gitignore
+echo "__pycache__/" >> .gitignore
+echo "*.pyc" >> .gitignore
+echo "" >> .gitignore
+
+echo "# IDE files" >> .gitignore
+echo ".vscode/" >> .gitignore
+echo ".idea/" >> .gitignore
+echo "*.swp" >> .gitignore
+echo "*.swo" >> .gitignore
